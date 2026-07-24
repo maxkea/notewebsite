@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile · Notes Sharing App</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+
+<nav class="navbar">
+    <div class="navbar-inner">
+        <a class="brand" href="index.html"><span class="brand-mark"></span>Notes</a>
+        <ul class="nav-links">
+            <li><a href="index.html" data-page="notes">Notes</a></li>
+            <li><a href="groups.html" data-page="groups">Groups</a></li>
+            <li><a href="profile.html" data-page="profile">Profile</a></li>
+            <li><button id="logoutBtn" type="button">Logout</button></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="container">
+
+    <section class="card" style="margin-bottom: 24px;">
+        <h2>Your profile</h2>
+        <div id="profileSummary"><p class="skeleton">Loading profile…</p></div>
+
+        <hr class="divider">
+
+        <div class="alert alert-error" id="profileError"></div>
+        <div class="alert alert-success" id="profileSuccess"></div>
+
+        <form id="profileForm" novalidate>
+            <div class="field">
+                <label for="nicknameInput">Nickname <span class="muted">(max 10 characters)</span></label>
+                <input type="text" id="nicknameInput" maxlength="10">
+            </div>
+            <div class="field">
+                <label for="bioInput">Bio <span class="muted">(max 200 characters)</span></label>
+                <textarea id="bioInput" maxlength="200"></textarea>
+                <div class="char-count" id="bioCharCount">0 / 200</div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="profileSubmit">Save profile</button>
+        </form>
+    </section>
+
+    <section class="card" style="margin-bottom: 24px;">
+        <h2>Change email</h2>
+        <div class="alert alert-error" id="emailError"></div>
+        <div class="alert alert-success" id="emailSuccess"></div>
+
+        <form id="emailForm" novalidate>
+            <div class="field">
+                <label for="newEmailInput">New email</label>
+                <input type="email" id="newEmailInput" required>
+            </div>
+            <div class="field">
+                <label for="emailPasswordInput">Current password</label>
+                <input type="password" id="emailPasswordInput" required>
+            </div>
+            <button type="submit" class="btn btn-secondary" id="emailSubmit">Update email</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Change password</h2>
+        <div class="alert alert-error" id="passwordError"></div>
+        <div class="alert alert-success" id="passwordSuccess"></div>
+
+        <form id="passwordForm" novalidate>
+            <div class="field">
+                <label for="currentPasswordInput">Current password</label>
+                <input type="password" id="currentPasswordInput" required>
+            </div>
+            <div class="field">
+                <label for="newPasswordInput">New password <span class="muted">(min 6 characters)</span></label>
+                <input type="password" id="newPasswordInput" minlength="6" required>
+            </div>
+            <button type="submit" class="btn btn-secondary" id="passwordSubmit">Update password</button>
+        </form>
+    </section>
+
+</main>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/profile.js"></script>
+<script>initProfilePage();</script>
+</body>
+</html>

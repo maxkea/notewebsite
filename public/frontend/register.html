@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create account · Notes</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+
+<div class="auth-shell">
+    <div class="card auth-card">
+        <div class="logo">
+            <span class="brand"><span class="brand-mark"></span>Notes</span>
+        </div>
+
+        <h2>Create your account</h2>
+
+        <div class="alert alert-error" id="registerError"></div>
+
+        <form id="registerForm" novalidate>
+            <div class="field">
+                <label for="nickname">Nickname <span class="muted">(max 10 characters)</span></label>
+                <input type="text" id="nickname" maxlength="10" autocomplete="nickname" required>
+            </div>
+            <div class="field">
+                <label for="email">Email</label>
+                <input type="email" id="email" autocomplete="email" required>
+            </div>
+            <div class="field">
+                <label for="password">Password <span class="muted">(min 6 characters)</span></label>
+                <input type="password" id="password" minlength="6" autocomplete="new-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="registerSubmit">Create account</button>
+        </form>
+
+        <p class="auth-foot">Already have an account? <a href="login.html">Log in</a></p>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>initRegisterPage();</script>
+</body>
+</html>

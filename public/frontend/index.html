@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notes · Notes Sharing App</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+
+<nav class="navbar">
+    <div class="navbar-inner">
+        <a class="brand" href="index.html"><span class="brand-mark"></span>Notes</a>
+        <ul class="nav-links">
+            <li><a href="index.html" data-page="notes">Notes</a></li>
+            <li><a href="groups.html" data-page="groups">Groups</a></li>
+            <li><a href="profile.html" data-page="profile">Profile</a></li>
+            <li><button id="logoutBtn" type="button">Logout</button></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="container">
+
+    <section class="card" style="margin-bottom: 24px;">
+        <h2>New note</h2>
+        <div class="alert alert-error" id="createNoteError"></div>
+
+        <form id="createNoteForm" novalidate>
+            <div class="field">
+                <label for="noteText">What's on your mind?</label>
+                <textarea id="noteText" maxlength="300" placeholder="Write your note…" required></textarea>
+                <div class="char-count" id="noteCharCount">0 / 300</div>
+            </div>
+
+            <div class="grid-2">
+                <div class="field">
+                    <label for="noteMode">Visibility</label>
+                    <select id="noteMode">
+                        <option value="public">Public — anyone can see it</option>
+                        <option value="private">Private — only you</option>
+                        <option value="group">Group — only group members</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="noteHours">Expires in (1–24 hours)</label>
+                    <input type="number" id="noteHours" min="1" max="24" value="24">
+                </div>
+            </div>
+
+            <div class="field hidden" id="noteGroupField">
+                <label for="noteGroupSelect">Group</label>
+                <select id="noteGroupSelect">
+                    <option value="">Select a group…</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="createNoteSubmit">Post note</button>
+        </form>
+    </section>
+
+    <div class="section-head">
+        <h2>Notes you can see</h2>
+        <button class="btn btn-secondary btn-sm" id="refreshBtn" type="button">Refresh</button>
+    </div>
+
+    <div id="notesList">
+        <p class="skeleton">Loading notes…</p>
+    </div>
+
+</main>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/notes.js"></script>
+<script>initNotesPage();</script>
+<script>grouploadingtyping();</script>
+</body>
+</html>

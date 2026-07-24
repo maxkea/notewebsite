@@ -1,0 +1,612 @@
+/* ==========================================================================
+   Notes Sharing App — design tokens & shared styles
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+    /* Color */
+    --ink: #1C2321;
+    --ink-soft: #4A524D;
+    --muted: #7A837D;
+    --paper: #F3F5F1;
+    --surface: #FFFFFF;
+    --border: #DDE3DC;
+    --accent: #2D6A4F;
+    --accent-dark: #204E3A;
+    --accent-soft: #E4EFE9;
+    --heart: #D9553D;
+    --heart-soft: #FBE7E2;
+    --danger: #C1432B;
+    --danger-soft: #FBEAE6;
+
+    /* Mode colors — used as the left-edge stripe on note cards */
+    --mode-public: #2D6A4F;
+    --mode-private: #6B5FA8;
+    --mode-group: #C08A2E;
+
+    /* Type */
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+    /* Layout */
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 2px rgba(28, 35, 33, 0.04), 0 4px 12px rgba(28, 35, 33, 0.05);
+    --shadow-hover: 0 2px 4px rgba(28, 35, 33, 0.06), 0 8px 20px rgba(28, 35, 33, 0.08);
+    --max-width: 860px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 0 0.5em;
+    color: var(--ink);
+}
+
+h1 { font-size: 1.9rem; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.05rem; }
+
+p { margin: 0 0 1em; }
+
+a {
+    color: var(--accent-dark);
+}
+
+::selection {
+    background: var(--accent-soft);
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* ---------------- Layout shells ---------------- */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    width: 100%;
+    padding: 28px 20px 64px;
+}
+
+.auth-shell {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* ---------------- Navbar ---------------- */
+
+.navbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.navbar-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-mark {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background: var(--accent);
+    transform: rotate(-8deg);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a,
+.nav-links button {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.nav-links a:hover,
+.nav-links button:hover {
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+}
+
+.nav-links a.active {
+    color: var(--accent-dark);
+    background: var(--accent-soft);
+}
+
+/* ---------------- Cards & surfaces ---------------- */
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.section-head .muted {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+/* ---------------- Forms ---------------- */
+
+.field {
+    margin-bottom: 14px;
+}
+
+.field label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--accent);
+}
+
+.char-count {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 4px;
+}
+
+/* ---------------- Buttons ---------------- */
+
+button {
+    font-family: var(--font-body);
+    cursor: pointer;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    transition: transform 0.05s ease, background 0.15s ease;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--accent-dark);
+}
+
+.btn-secondary {
+    background: var(--surface);
+    color: var(--ink);
+    border-color: var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--paper);
+}
+
+.btn-danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.btn-danger:hover {
+    background: #f6d8d0;
+}
+
+.btn-ghost {
+    background: none;
+    color: var(--ink-soft);
+    border-color: transparent;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+}
+
+.btn-ghost:hover {
+    background: var(--paper);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.btn-sm {
+    padding: 6px 11px;
+    font-size: 0.8rem;
+}
+
+.btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ---------------- Alerts / errors ---------------- */
+
+.alert {
+    border-radius: var(--radius-sm);
+    padding: 10px 13px;
+    font-size: 0.87rem;
+    margin-bottom: 14px;
+    display: none;
+}
+
+.alert.show {
+    display: block;
+}
+
+.alert-error {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border: 1px solid #f0c6bc;
+}
+
+.alert-success {
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+    border: 1px solid #cfe3d8;
+}
+
+/* ---------------- Notes ---------------- */
+
+.note-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--mode-public);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+}
+
+.note-card[data-mode="private"] { border-left-color: var(--mode-private); }
+.note-card[data-mode="group"] { border-left-color: var(--mode-group); }
+
+.note-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.note-author {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.note-meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.mode-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--ink-soft);
+    border: 1px solid var(--border);
+}
+
+.note-text {
+    font-size: 0.98rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 8px 0 12px;
+}
+
+.note-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.like-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 0.83rem;
+    color: var(--ink-soft);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.like-btn.liked {
+    background: var(--heart-soft);
+    color: var(--heart);
+    border-color: #f0c9bf;
+}
+
+.comments-box {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+}
+
+.comment-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 0.87rem;
+}
+
+.comment-row + .comment-row {
+    border-top: 1px solid var(--paper);
+}
+
+.comment-author {
+    font-weight: 600;
+    margin-right: 6px;
+}
+
+.comment-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.comment-form input {
+    flex: 1;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+}
+
+.empty-state h3 {
+    color: var(--ink-soft);
+}
+
+/* ---------------- Groups ---------------- */
+
+.group-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+}
+
+.group-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.owner-badge {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.member-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-top: 1px solid var(--paper);
+    font-size: 0.9rem;
+}
+
+.member-row:first-child {
+    border-top: none;
+}
+
+/* ---------------- Misc ---------------- */
+
+.toolbar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.inline-form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 380px;
+}
+
+.auth-card .logo {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+.auth-card .logo .brand {
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.auth-foot {
+    text-align: center;
+    font-size: 0.87rem;
+    color: var(--muted);
+    margin-top: 16px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.skeleton {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    padding: 16px 0;
+}
+
+@media (max-width: 560px) {
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+    .nav-links {
+        gap: 0;
+    }
+    .nav-links a,
+    .nav-links button {
+        padding: 8px 8px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
