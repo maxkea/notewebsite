@@ -59,7 +59,7 @@ Built with **Express**, **MySQL (mysql2/promise)**, **JWT** authentication, **bc
 ### 1. Install dependencies
 
 ```bash
-npm install express helmet cors dotenv mysql2 bcryptjs jsonwebtoken xss
+npm install
 ```
 
 ### 2. Configure environment variables
@@ -74,7 +74,10 @@ DB_USER=root
 DB_PASSWORD=
 DB_NAME=notes_app
 DB_PORT=3306
+ALLOW_LIST=http://localhost:3000,http://localhost:5173,https://example.com
 ```
+
+`ALLOW_LIST` is a comma-separated list of origins allowed by CORS (no spaces around commas). It is required — the server reads `process.env.ALLOW_LIST.split(',')` at startup and will throw if unset.
 
 ### 3. Create the database
 
@@ -172,12 +175,13 @@ Implemented in `notePermission.js`, applied to comments and likes:
 - Passwords hashed with `bcryptjs` (10 salt rounds); never returned in API responses.
 - All free-text user input (nickname, bio, note text, comments) is sanitized with `xss` (no HTML allowed) and length-capped.
 - `userid` for mutating actions is always taken from the verified JWT (`req.user.userid`), never from the request body/URL, preventing spoofing.
-- `helmet` sets a restrictive Content-Security-Policy; `cors` is restricted to an explicit origin allow-list (update this list for your deployment).
+- `helmet` sets a restrictive Content-Security-Policy; `cors` is restricted to an explicit origin allow-list configured via the `ALLOW_LIST` env var (comma-separated, no spaces — update per environment/deployment).
 - Group ownership transfer, member add/remove, and note/comment mutations all re-verify ownership/membership server-side before acting.
 
 ## Known Gaps / Suggestions
 
 - `_env.example` and `db.js` env var names should be double-checked against your actual `.env` file.
+- No fallback/validation if `ALLOW_LIST` is unset — `process.env.ALLOW_LIST.split(',')` will throw at startup; consider a default or a clearer startup error.
 - `index.js` `require` paths (`./aut/...`, `./middlewave/...`, `./note/...`, `./profile/...`, `./group/...`) assume a specific folder layout — adjust if your files live elsewhere (e.g. `authMiddleware.js` internally requires `../aut/jwt`, implying it lives in a sibling folder to `aut/`).
 - No pagination on `GET /notes` — could grow expensive with large datasets.
 - No rate limiting on `/login` or `/register`.
