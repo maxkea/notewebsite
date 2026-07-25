@@ -3,7 +3,7 @@
    Nothing else in this app should call fetch() directly.
    ========================================================================== */
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = '/api';
 const TOKEN_KEY = 'notes_app_token';
 
 /* ---------------- token helpers ---------------- */

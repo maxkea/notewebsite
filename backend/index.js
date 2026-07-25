@@ -2,16 +2,8 @@ require('dotenv').config();
 
 const express = require('express');
 const helmet = require('helmet');
-const cors = require('cors');
 
 const app = express();
-const allowList = process.env.ALLOW_LIST.split(',');
-
-app.use(cors({
-    origin: allowList,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
 
 const PORT = process.env.PORT || 3000;
 

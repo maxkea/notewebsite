@@ -1,0 +1,5 @@
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON notes_app.*
+TO 'notes_app_user'@'%';
+
+FLUSH PRIVILEGES;

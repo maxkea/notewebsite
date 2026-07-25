@@ -1,0 +1,109 @@
+services:
+
+  # =========================
+  # Frontend + Nginx
+  # =========================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: nginx_frontend
+
+    ports:
+      - "80:80"
+
+    depends_on:
+      - backend
+
+    networks:
+      - frontend_network
+
+
+  # =========================
+  # Backend + Node.js
+  # =========================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: node_backend
+
+    environment:
+      PORT: ${PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    expose:
+      - "3000"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    networks:
+      - frontend_network
+      - backend_network
+
+
+  # =========================
+  # MySQL Database
+  # =========================
+  db:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+
+    container_name: mysql_database
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    networks:
+      - backend_network
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+# =========================
+# Networks
+# =========================
+networks:
+
+  frontend_network:
+    driver: bridge
+
+  backend_network:
+    driver: bridge
+
+
+# =========================
+# Persistent Database Data
+# =========================
+volumes:
+
+  mysql_data:
