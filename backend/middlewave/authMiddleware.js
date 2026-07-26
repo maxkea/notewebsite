@@ -1,36 +1,49 @@
 const { checkToken } = require('../aut/jwt');
+const { AppError } = require('../error/error');
 
 const authMiddleware = (req, res, next) => {
     // Get Authorization header
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-        return res.status(401).json({
-            message: 'Token required'
-        });
+        // 401 Unauthorized: Thiếu Header Authorization
+        return next(new AppError('Token required', 401));
     }
 
     // Authorization: Bearer <token>
-    const token = authHeader.split(' ')[1];
+    const parts = authHeader.split(' ');
+    
+    // Kiểm tra đúng định dạng 'Bearer <token>'
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+        return next(new AppError('Format is Authorization: Bearer [token]', 401));
+    }
+
+    const token = parts[1];
 
     if (!token) {
-        return res.status(401).json({
-            message: 'Token required'
-        });
+        return next(new AppError('Token required', 401));
     }
 
-    // Use checkToken() from auth/jwt.js
-    const result = checkToken(token);
+    try {
+        // Nếu hàm checkToken ở jwt.js ném thẳng AppError (Cách 1):
+        // result sẽ là decoded payload
+        const decoded = checkToken(token);
 
-    if (!result.valid) {
-        return res.status(401).json({
-            message: 'Invalid or expired token',
-            error: result.error
-        });
+        // Trường hợp checkToken trả về object { valid, data, error } (Cách 2):
+        if (decoded && typeof decoded === 'object' && 'valid' in decoded) {
+            if (!decoded.valid) {
+                return next(new AppError(decoded.error || 'Invalid or expired token', 401));
+            }
+            req.user = decoded.data;
+        } else {
+            req.user = decoded;
+        }
+
+        next();
+    } catch (error) {
+        // Nếu checkToken bắn lỗi (như AppError), đẩy thẳng sang error handler
+        next(error);
     }
-    req.user = result.data;
-
-    next();
 };
 
 module.exports = authMiddleware;

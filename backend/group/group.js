@@ -1,16 +1,18 @@
 const db = require('../db');
-
+const { AppError } = require('../error/error');
 
 // ========================================
 // CREATE GROUP
 // ========================================
 
 const createGroup = async ({ userid, groupname }) => {
+    if (!groupname) {
+        throw new AppError("Group name is required", 400);
+    }
 
     const connection = await db.getConnection();
 
     try {
-
         await connection.beginTransaction();
 
         // Create group
@@ -28,7 +30,6 @@ const createGroup = async ({ userid, groupname }) => {
 
         const groupid = result.insertId;
 
-
         // Add owner to group_members
         await connection.query(
             `
@@ -42,9 +43,7 @@ const createGroup = async ({ userid, groupname }) => {
             ]
         );
 
-
         await connection.commit();
-
 
         return {
             groupid,
@@ -53,15 +52,13 @@ const createGroup = async ({ userid, groupname }) => {
         };
 
     } catch (error) {
-
         await connection.rollback();
-
-        throw error;
+        // Nếu đã là AppError thì throw tiếp, ngược lại bắn 500
+        if (error instanceof AppError) throw error;
+        throw new AppError(error.message || "Failed to create group", 500);
 
     } finally {
-
         connection.release();
-
     }
 };
 
@@ -87,15 +84,11 @@ const deleteGroup = async ({ groupid, userid }) => {
     );
 
     if (groups.length === 0) {
-        throw new Error(
-            'Group not found or you are not the owner'
-        );
+        // 403 Forbidden: Không phải chủ sở hữu hoặc group không tồn tại
+        throw new AppError('Group not found or you are not the owner', 403);
     }
 
-
     // Delete group
-    // group_members will be deleted automatically
-    // if FOREIGN KEY uses ON DELETE CASCADE
     const [result] = await db.query(
         `
         DELETE FROM user_groups
@@ -108,13 +101,9 @@ const deleteGroup = async ({ groupid, userid }) => {
         ]
     );
 
-
     if (result.affectedRows === 0) {
-        throw new Error(
-            'Failed to delete group'
-        );
+        throw new AppError('Failed to delete group', 500);
     }
-
 
     return {
         message: 'Group deleted successfully',
@@ -148,11 +137,9 @@ const addMember = async ({
     );
 
     if (groups.length === 0) {
-        throw new Error(
-            'You are not the owner of this group'
-        );
+        // 403 Forbidden: Chỉ chủ nhóm mới được thêm thành viên
+        throw new AppError('You are not the owner of this group', 403);
     }
-
 
     // Check user exists
     const [users] = await db.query(
@@ -167,11 +154,9 @@ const addMember = async ({
     );
 
     if (users.length === 0) {
-        throw new Error(
-            'User not found'
-        );
+        // 404 Not Found: Không tìm thấy người dùng muốn thêm
+        throw new AppError('User not found', 404);
     }
-
 
     // Check user already member
     const [members] = await db.query(
@@ -188,11 +173,9 @@ const addMember = async ({
     );
 
     if (members.length > 0) {
-        throw new Error(
-            'User is already a member of this group'
-        );
+        // 409 Conflict: Thành viên đã có trong nhóm từ trước
+        throw new AppError('User is already a member of this group', 409);
     }
-
 
     // Add member
     const query = `
@@ -201,19 +184,17 @@ const addMember = async ({
     `;
 
     try {
-        const [result] = await db.query(query, [
+        await db.query(query, [
             groupid,
             userid
         ]);
 
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
-            throw new Error("User exist in group");
+            throw new AppError("User already exists in group", 409);
         }
-
-        throw error;
+        throw new AppError(error.message || "Failed to add member", 500);
     }
-
 
     return {
         message: 'Member added successfully',
@@ -248,19 +229,14 @@ const removeMember = async ({
     );
 
     if (groups.length === 0) {
-        throw new Error(
-            'You are not the owner of this group'
-        );
+        throw new AppError('You are not the owner of this group', 403);
     }
-
 
     // Owner cannot remove himself
     if (Number(ownerid) === Number(userid)) {
-        throw new Error(
-            'Group owner cannot be removed from the group'
-        );
+        // 400 Bad Request: Hành động không hợp lệ
+        throw new AppError('Group owner cannot be removed from the group', 400);
     }
-
 
     // Remove member
     const [result] = await db.query(
@@ -275,13 +251,10 @@ const removeMember = async ({
         ]
     );
 
-
     if (result.affectedRows === 0) {
-        throw new Error(
-            'User is not a member of this group'
-        );
+        // 404 Not Found: Người dùng không nằm trong nhóm
+        throw new AppError('User is not a member of this group', 404);
     }
-
 
     return {
         message: 'Member removed successfully',
@@ -316,19 +289,13 @@ const changeGroupOwner = async ({
     );
 
     if (groups.length === 0) {
-        throw new Error(
-            'You are not the owner of this group'
-        );
+        throw new AppError('You are not the owner of this group', 403);
     }
-
 
     // Cannot transfer ownership to yourself
     if (Number(ownerid) === Number(newOwnerid)) {
-        throw new Error(
-            'You are already the owner of this group'
-        );
+        throw new AppError('You are already the owner of this group', 400);
     }
-
 
     // Check new owner is a member
     const [members] = await db.query(
@@ -345,11 +312,9 @@ const changeGroupOwner = async ({
     );
 
     if (members.length === 0) {
-        throw new Error(
-            'New owner must be a member of the group'
-        );
+        // 400 Bad Request: Điều kiện chuyển quyền sở hữu chưa đạt
+        throw new AppError('New owner must be a member of the group', 400);
     }
-
 
     // Change owner
     const [result] = await db.query(
@@ -366,13 +331,9 @@ const changeGroupOwner = async ({
         ]
     );
 
-
     if (result.affectedRows === 0) {
-        throw new Error(
-            'Failed to change group owner'
-        );
+        throw new AppError('Failed to change group owner', 500);
     }
-
 
     return {
         message: 'Group owner changed successfully',
@@ -381,7 +342,10 @@ const changeGroupOwner = async ({
     };
 };
 
-//wiew members in group 
+
+// ========================================
+// VIEW MEMBERS IN GROUP 
+// ========================================
 
 const viewGroupMembers = async ({ groupid, userid }) => {
 
@@ -400,9 +364,8 @@ const viewGroupMembers = async ({ groupid, userid }) => {
     );
 
     if (memberCheck.length === 0) {
-        throw new Error(
-            'You are not a member of this group'
-        );
+        // 403 Forbidden: Không phải thành viên thì không được xem danh sách
+        throw new AppError('You are not a member of this group', 403);
     }
 
     // Lấy danh sách thành viên trong group
@@ -428,7 +391,10 @@ const viewGroupMembers = async ({ groupid, userid }) => {
     };
 };
 
-//wiew group user joined
+
+// ========================================
+// VIEW GROUP USER JOINED
+// ========================================
 
 const viewGroup = async ({ userid }) => {
 
@@ -457,7 +423,10 @@ const viewGroup = async ({ userid }) => {
     return groups;
 };
 
-// leave group 
+
+// ========================================
+// LEAVE GROUP 
+// ========================================
 
 const leaveGroup = async ({ groupid, userid }) => {
 
@@ -472,16 +441,14 @@ const leaveGroup = async ({ groupid, userid }) => {
     );
 
     if (groups.length === 0) {
-        throw new Error('Group not found');
+        throw new AppError('Group not found', 404);
     }
 
     const ownerid = groups[0].ownerid;
 
     // Owner cannot leave directly
     if (Number(ownerid) === Number(userid)) {
-        throw new Error(
-            'Group owner cannot leave. Transfer ownership first.'
-        );
+        throw new AppError('Group owner cannot leave. Transfer ownership first.', 400);
     }
 
     // Remove current user from group
@@ -498,9 +465,7 @@ const leaveGroup = async ({ groupid, userid }) => {
     );
 
     if (result.affectedRows === 0) {
-        throw new Error(
-            'You are not a member of this group'
-        );
+        throw new AppError('You are not a member of this group', 404);
     }
 
     return {
@@ -508,6 +473,7 @@ const leaveGroup = async ({ groupid, userid }) => {
         groupid
     };
 };
+
 
 // ========================================
 // EXPORT
@@ -523,5 +489,3 @@ module.exports = {
     viewGroup,
     leaveGroup
 };
-
-

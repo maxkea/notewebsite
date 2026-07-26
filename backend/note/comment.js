@@ -1,5 +1,6 @@
 const db = require('../db');
 const xss = require('xss');
+const { AppError } = require('../error/error');
 
 const {
     checkNotePermission
@@ -23,26 +24,31 @@ const comment = async ({
     });
 
     if (!canAccess) {
-        throw new Error(
-            'You do not have permission to comment on this note'
+        // 403 Forbidden: Không có quyền truy cập/bình luận vào ghi chú này
+        throw new AppError(
+            'You do not have permission to comment on this note',
+            403
         );
     }
 
 
     // Kiểm tra comment rỗng
     if (!comment || comment.trim() === '') {
-        throw new Error(
-            'Comment cannot be empty'
+        // 400 Bad Request: Dữ liệu đầu vào không hợp lệ
+        throw new AppError(
+            'Comment cannot be empty',
+            400
         );
     }
 
-     const sanitizedComment = xss(comment.trim(), {
+    const sanitizedComment = xss(comment.trim(), {
         whiteList: {}, // Không cho phép HTML tag
         stripIgnoredTag: true
     });
 
     if (sanitizedComment.length > 100) {
-        throw new Error("Comment too long");
+        // 400 Bad Request: Bình luận vượt quá độ dài quy định
+        throw new AppError("Comment too long", 400);
     }
 
     // Thêm comment
@@ -60,6 +66,11 @@ const comment = async ({
             sanitizedComment
         ]
     );
+
+    if (result.affectedRows === 0) {
+        // 500 Internal Server Error: Lỗi cơ sở dữ liệu khi tạo bình luận
+        throw new AppError("Failed to add comment", 500);
+    }
 
 
     return {
@@ -96,8 +107,10 @@ const deleteComment = async ({
 
 
     if (result.affectedRows === 0) {
-        throw new Error(
-            'Comment not found or unauthorized'
+        // 404 Not Found / 403 Forbidden: Không tìm thấy comment hoặc người xóa không phải chính chủ
+        throw new AppError(
+            'Comment not found or unauthorized',
+            404
         );
     }
 

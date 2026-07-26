@@ -2,30 +2,16 @@ require('dotenv').config();
 
 const express = require('express');
 const helmet = require('helmet');
+const logger = require('./logger');
+const requestLogger = require('./middlewave/requestLogger');
+const { AppError } = require('./error/error')
 
 const app = express();
 
+// Trust Nginx proxy
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 3000;
-
-app.use((req, res, next) => {
-    const start = Date.now();
-
-    console.log(`➡️  ${req.method} ${req.originalUrl}`);
-
-    res.on('finish', () => {
-        const duration = Date.now() - start;
-
-        console.log(
-            `⬅️  ${req.method} ${req.originalUrl} | Status: ${res.statusCode} | ${duration}ms`
-        );
-    });
-
-    next();
-});
-
-app.use(express.json());
-
-app.use(express.static('public'));
 
 app.use(
     helmet({
@@ -40,6 +26,12 @@ app.use(
         }
     })
 );
+
+app.use(requestLogger);
+
+app.use(express.json());
+
+
 // ==========================
 // Import Middleware
 // ==========================
@@ -116,31 +108,27 @@ const {
 // ==========================
 
 // Register
-app.post('/register', async (req, res) => {
+app.post('/register', async (req, res, next) => {
     try {
         const result = await register(req.body); //nickname, email, password
 
         res.status(201).json(result);
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 
 // Login
-app.post('/login', async (req, res) => {
+app.post('/login', async (req, res, next) => {
     try {
         const result = await login(req.body); // email, password
 
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(401).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
@@ -150,7 +138,7 @@ app.post('/login', async (req, res) => {
 // ==========================
 
 // Change Email
-app.put('/users/email', authMiddleware, async (req, res) => {
+app.put('/users/email', authMiddleware, async (req, res, next) => {
     try {
 
         // userid lấy từ JWT
@@ -170,15 +158,13 @@ app.put('/users/email', authMiddleware, async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 
 // Change Password
-app.put('/users/password', authMiddleware, async (req, res) => {
+app.put('/users/password', authMiddleware, async (req, res, next) => {
     try {
 
         // userid lấy từ JWT
@@ -198,9 +184,7 @@ app.put('/users/password', authMiddleware, async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
@@ -210,7 +194,7 @@ app.put('/users/password', authMiddleware, async (req, res) => {
 // ==========================
 
 // Create Note
-app.post('/notes', authMiddleware, async (req, res) => {
+app.post('/notes', authMiddleware, async (req, res, next) => {
     try {
 
         // Không lấy userid từ client
@@ -237,15 +221,13 @@ app.post('/notes', authMiddleware, async (req, res) => {
         });
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 
 // Receive Note
-app.get('/notes', authMiddleware, async (req, res) => {
+app.get('/notes', authMiddleware, async (req, res, next) => {
     try {
 
         const userid = req.user.userid;
@@ -256,15 +238,13 @@ app.get('/notes', authMiddleware, async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 
 // Update Note
-app.put('/notes/:noteid', authMiddleware, async (req, res) => {
+app.put('/notes/:noteid', authMiddleware, async (req, res, next) => {
     try {
 
         const userid = req.user.userid;
@@ -287,15 +267,13 @@ app.put('/notes/:noteid', authMiddleware, async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(403).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 
 // Delete Note
-app.delete('/notes/:noteid', authMiddleware, async (req, res) => {
+app.delete('/notes/:noteid', authMiddleware, async (req, res, next) => {
     try {
 
         const userid = req.user.userid;
@@ -309,9 +287,7 @@ app.delete('/notes/:noteid', authMiddleware, async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(403).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
@@ -320,7 +296,7 @@ app.delete('/notes/:noteid', authMiddleware, async (req, res) => {
 // ==========================
 
 // Add Comment
-app.post('/notes/:noteid/comments', authMiddleware, async (req, res) => {
+app.post('/notes/:noteid/comments', authMiddleware, async (req, res, next) => {
     try {
 
         // userid lấy từ JWT
@@ -345,15 +321,13 @@ app.post('/notes/:noteid/comments', authMiddleware, async (req, res) => {
         });
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 
 // Like Note
-app.post('/notes/:noteid/like', authMiddleware, async (req, res) => {
+app.post('/notes/:noteid/like', authMiddleware, async (req, res, next ) => {
     try {
 
         // userid lấy từ JWT
@@ -373,14 +347,12 @@ app.post('/notes/:noteid/like', authMiddleware, async (req, res) => {
         });
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+       next(error);
     }
 });
 
 // Delete Comment
-app.delete('/notes/comments/:commentid', authMiddleware, async (req, res) => {
+app.delete('/notes/comments/:commentid', authMiddleware, async (req, res, next) => {
     try {
 
         // userid lấy từ JWT
@@ -399,15 +371,13 @@ app.delete('/notes/comments/:commentid', authMiddleware, async (req, res) => {
         });
 
     } catch (error) {
-        res.status(403).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 
 // Unlike Note
-app.delete('/notes/:noteid/like', authMiddleware, async (req, res) => {
+app.delete('/notes/:noteid/like', authMiddleware, async (req, res, next) => {
     try {
 
         // userid lấy từ JWT
@@ -427,9 +397,7 @@ app.delete('/notes/:noteid/like', authMiddleware, async (req, res) => {
         });
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+       next(error);
     }
 });
 
@@ -439,7 +407,7 @@ app.delete('/notes/:noteid/like', authMiddleware, async (req, res) => {
 // ==========================
 
 // View Profile
-app.get('/profile/:userid', async (req, res) => {
+app.get('/profile/:userid', async (req, res, next) => {
     try {
 
         const userid = req.params.userid;
@@ -451,15 +419,13 @@ app.get('/profile/:userid', async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 
 // Change Bio, nickname
-app.put('/profile', authMiddleware, async (req, res) => {
+app.put('/profile', authMiddleware, async (req, res, next) => {
     try {
 
         const userid = req.user.userid;
@@ -477,9 +443,7 @@ app.put('/profile', authMiddleware, async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
@@ -488,7 +452,7 @@ app.put('/profile', authMiddleware, async (req, res) => {
 //============
 
 // Create Group
-app.post('/groups', authMiddleware, async (req, res) => {
+app.post('/groups', authMiddleware, async (req, res, next) => {
     try {
         const userid = req.user.userid;
         const { groupname } = req.body;
@@ -501,15 +465,13 @@ app.post('/groups', authMiddleware, async (req, res) => {
         res.status(201).json(result);
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+       next(error);
     }
 });
 
 
 // Delete Group
-app.delete('/groups/:groupid', authMiddleware, async (req, res) => {
+app.delete('/groups/:groupid', authMiddleware, async (req, res, next) => {
     try {
         const userid = req.user.userid;
         const groupid = req.params.groupid;
@@ -522,15 +484,13 @@ app.delete('/groups/:groupid', authMiddleware, async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(403).json({
-            message: error.message
-        });
+       next(error);
     }
 });
 
 
 // Add Member
-app.post('/groups/:groupid/members', authMiddleware, async (req, res) => {
+app.post('/groups/:groupid/members', authMiddleware, async (req, res, next) => {
     try {
         const ownerid = req.user.userid;
         const groupid = req.params.groupid;
@@ -546,15 +506,13 @@ app.post('/groups/:groupid/members', authMiddleware, async (req, res) => {
         res.status(201).json(result);
 
     } catch (error) {
-        res.status(403).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 
 // Remove Member
-app.delete('/groups/:groupid/members/:userid', authMiddleware, async (req, res) => {
+app.delete('/groups/:groupid/members/:userid', authMiddleware, async (req, res, next) => {
     try {
         const ownerid = req.user.userid;
         const groupid = req.params.groupid;
@@ -569,15 +527,13 @@ app.delete('/groups/:groupid/members/:userid', authMiddleware, async (req, res) 
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(403).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 
 // Change Group Owner
-app.put('/groups/:groupid/owner', authMiddleware, async (req, res) => {
+app.put('/groups/:groupid/owner', authMiddleware, async (req, res, next) => {
     try {
         const ownerid = req.user.userid;
         const groupid = req.params.groupid;
@@ -595,13 +551,11 @@ app.put('/groups/:groupid/owner', authMiddleware, async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(403).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
-app.get('/groups/:groupid/members', authMiddleware, async (req, res) => {
+app.get('/groups/:groupid/members', authMiddleware, async (req, res, next) => {
     try {
         // Người đang đăng nhập lấy từ JWT
         const userid = req.user.userid;
@@ -617,15 +571,13 @@ app.get('/groups/:groupid/members', authMiddleware, async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(403).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
 //wiew group user joined
 
-app.get('/groups', authMiddleware, async (req, res) => {
+app.get('/groups', authMiddleware, async (req, res, next) => {
     try {
         const userid = req.user.userid;
 
@@ -636,9 +588,7 @@ app.get('/groups', authMiddleware, async (req, res) => {
         res.status(200).json(result);
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 
@@ -646,7 +596,7 @@ app.get('/groups', authMiddleware, async (req, res) => {
 app.delete(
     '/groups/:groupid/leave',
     authMiddleware,
-    async (req, res) => {
+    async (req, res, next) => {
         try {
             const userid = req.user.userid;
             const groupid = req.params.groupid;
@@ -659,9 +609,7 @@ app.delete(
             res.status(200).json(result);
 
         } catch (error) {
-            res.status(400).json({
-                message: error.message
-            });
+            next(error);
         }
     }
 );
@@ -671,6 +619,25 @@ setInterval(
     60 * 60 * 1000
 );
 
+app.use((err, req, res, next) => {
+    const isOperational = err instanceof AppError;
+    const statusCode = err.statusCode || 500;
+
+    const level = isOperational ? 'warn' : 'error';
+
+    logger[level]({
+        request_id: req.requestId,
+        err: {
+            message: err.message,
+            stack: err.stack,
+        },
+        method: req.method,
+        path: req.originalUrl,
+        status: statusCode,
+    }, isOperational ? 'Handled application error' : 'Unexpected error');
+
+    res.status(statusCode).json({ message: err.message });
+});
 // ==========================
 // START SERVER
 // ==========================

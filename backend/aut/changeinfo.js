@@ -1,13 +1,18 @@
 const db = require('../db');
 const bcrypt = require('bcryptjs');
+const {AppError}= require('../error/error');
 
 
 // Change Email
 const changeEmail = async ({ userid, newEmail, password }) => {
 
+    if (!newEmail || !password) {
+        throw new AppError("Email and password are required", 400);
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(newEmail)) {
-        throw new Error("Invalid email format");
+       throw new AppError("Invalid email format", 400);
     }
 
     // 1. Check new email already exists
@@ -17,7 +22,7 @@ const changeEmail = async ({ userid, newEmail, password }) => {
     );
 
     if (existingUser.length > 0) {
-        throw new Error("Email already exists");
+       throw new AppError("Email already exists", 409);;
     }
 
 
@@ -28,7 +33,7 @@ const changeEmail = async ({ userid, newEmail, password }) => {
     );
 
     if (users.length === 0) {
-        throw new Error("User not found");
+       throw new AppError("User not found", 404);
     }
 
     const passwordHash = users[0].password;
@@ -38,7 +43,7 @@ const changeEmail = async ({ userid, newEmail, password }) => {
     const isMatch = await bcrypt.compare(password, passwordHash);
 
     if (!isMatch) {
-        throw new Error("Incorrect password");
+        throw new AppError("Incorrect password", 401);
     }
 
 
@@ -51,7 +56,7 @@ const changeEmail = async ({ userid, newEmail, password }) => {
     );
 
     if (result.affectedRows === 0) {
-        throw new Error("Failed to update email");
+        throw new AppError("Failed to update email", 500);
     }
 
     return {
@@ -68,8 +73,13 @@ const changePassword = async ({
     newPassword
 }) => {
 
-     if (newPassword.length < 6) {
-        throw new Error("Password must be at least 6 characters");
+    // Validate missing fields
+    if (!currentPassword || !newPassword) {
+        throw new AppError("Current password and new password are required", 400);
+    }
+
+    if (newPassword.length < 6) {
+        throw new AppError("Password must be at least 6 characters", 400);
     }
 
     // 1. Get current password hash
@@ -79,7 +89,7 @@ const changePassword = async ({
     );
 
     if (users.length === 0) {
-        throw new Error("User not found");
+        throw new AppError("User not found", 404);
     }
 
     const passwordHash = users[0].password;
@@ -92,7 +102,7 @@ const changePassword = async ({
     );
 
     if (!isMatch) {
-        throw new Error("Incorrect current password");
+        throw new AppError("Incorrect current password", 401);
     }
 
 
@@ -112,7 +122,7 @@ const changePassword = async ({
     );
 
     if (result.affectedRows === 0) {
-        throw new Error("Failed to update password");
+        throw new AppError("Failed to update password", 500);
     }
 
     return {

@@ -1,4 +1,5 @@
 const db = require('../db');
+const { AppError } = require('../error/error');
 
 const {
     checkNotePermission
@@ -18,8 +19,10 @@ const likes = async ({ userid, noteid }) => {
     });
 
     if (!canAccess) {
-        throw new Error(
-            'You do not have permission to like this note'
+        // 403 Forbidden: Không có quyền tương tác với ghi chú này
+        throw new AppError(
+            'You do not have permission to like this note',
+            403
         );
     }
 
@@ -40,8 +43,10 @@ const likes = async ({ userid, noteid }) => {
 
 
     if (existingLike.length > 0) {
-        throw new Error(
-            'You already liked this note'
+        // 409 Conflict: Xung đột dữ liệu do đã like từ trước
+        throw new AppError(
+            'You already liked this note',
+            409
         );
     }
 
@@ -58,6 +63,11 @@ const likes = async ({ userid, noteid }) => {
             noteid
         ]
     );
+
+    if (result.affectedRows === 0) {
+        // 500 Internal Server Error: Thất bại khi ghi dữ liệu vào DB
+        throw new AppError('Failed to like note', 500);
+    }
 
 
     return {
@@ -81,8 +91,10 @@ const unlikes = async ({ userid, noteid }) => {
     });
 
     if (!canAccess) {
-        throw new Error(
-            'You do not have permission to unlike this note'
+        // 403 Forbidden: Không có quyền tương tác với ghi chú này
+        throw new AppError(
+            'You do not have permission to unlike this note',
+            403
         );
     }
 
@@ -102,8 +114,10 @@ const unlikes = async ({ userid, noteid }) => {
 
 
     if (result.affectedRows === 0) {
-        throw new Error(
-            'Like not found'
+        // 404 Not Found: Chưa từng like ghi chú này nên không thể unlike
+        throw new AppError(
+            'Like not found',
+            404
         );
     }
 

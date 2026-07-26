@@ -1,6 +1,10 @@
 const db = require("../db");
-const xss = require('xss')
+const xss = require('xss');
+const { AppError } = require('../error/error');
 
+// ========================================
+// VIEW PROFILE
+// ========================================
 const viewProfile = async ({ userid }) => {
     const query = `
         SELECT
@@ -14,25 +18,28 @@ const viewProfile = async ({ userid }) => {
     const [rows] = await db.query(query, [userid]);
 
     if (rows.length === 0) {
-        throw new Error("User not found");
+        throw new AppError("User not found", 404);
     }
 
     return rows[0];
 };
 
+// ========================================
+// UPDATE PROFILE
+// ========================================
 const updateProfile = async ({ userid, nickname, bio }) => {
     
     if (bio) {
         bio = xss(bio.trim(), { whiteList: {} });
         if (bio.length > 200) {
-            throw new Error("Bio too long");
+            throw new AppError("Bio cannot exceed 200 characters", 400);
         }
     }
 
     if (nickname) {
         nickname = xss(nickname.trim(), { whiteList: {} });
         if (nickname.length > 10) {
-            throw new Error("nickname too long");
+            throw new AppError("Nickname cannot exceed 10 characters", 400);
         }
     }
 
@@ -51,7 +58,7 @@ const updateProfile = async ({ userid, nickname, bio }) => {
     ]);
 
     if (result.affectedRows === 0) {
-        throw new Error("User not found");
+        throw new AppError("User not found", 404);
     }
 
     const [rows] = await db.query(
