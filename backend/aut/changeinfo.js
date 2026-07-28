@@ -1,6 +1,7 @@
 const db = require('../db');
 const bcrypt = require('bcryptjs');
 const {AppError}= require('../error/error');
+const validator = require('validator');
 
 
 // Change Email
@@ -10,9 +11,8 @@ const changeEmail = async ({ userid, newEmail, password }) => {
         throw new AppError("Email and password are required", 400);
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(newEmail)) {
-       throw new AppError("Invalid email format", 400);
+    if (!validator.isEmail(newEmail)) {
+        throw new AppError('Invalid email', 400);
     }
 
     // 1. Check new email already exists

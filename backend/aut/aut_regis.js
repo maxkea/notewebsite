@@ -3,6 +3,7 @@ const jwt = require("./jwt");
 const bcrypt = require("bcryptjs");
 const xss =require('xss');
 const {AppError}= require('../error/error');
+const validator = require('validator');
 
 // Register
 const register = async ({ nickname, email, password }) => {
@@ -17,9 +18,8 @@ const register = async ({ nickname, email, password }) => {
         throw new AppError("Email is required", 400);
     }
     //email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        throw new AppError("Invalid email format",400);
+     if (!validator.isEmail(email)) {
+            throw new AppError('Invalid email', 400);
     }
     
     // Validate password strength
