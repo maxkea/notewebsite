@@ -1,0 +1,49 @@
+// ==========================================
+// 1. THU THẬP LOG CHO NGINX
+// ==========================================
+
+// Tìm các file log của Nginx
+local.file_match "tim_log_nginx" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/nginx/*.log",
+    app_name    = "web_nginx", // Label tự đặt để phân biệt trên Grafana
+  }]
+}
+
+// Đọc log Nginx và chuyển sang khối gửi
+loki.source.file "doc_log_nginx" {
+  targets    = local.file_match.tim_log_nginx.targets
+  forward_to = [loki.write.day_ve_loki.receiver]
+}
+
+
+// ==========================================
+// 2. THU THẬP LOG CHO NODE.JS APP
+// ==========================================
+
+// Tìm các file log của Node.js
+local.file_match "tim_log_nodejs" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/nodejs/*.log",
+    app_name    = "backend_nodejs", // Label tự đặt khác cho Node.js
+  }]
+}
+
+// Đọc log Node.js và chuyển sang khối gửi
+loki.source.file "doc_log_nodejs" {
+  targets    = local.file_match.tim_log_nodejs.targets
+  forward_to = [loki.write.day_ve_loki.receiver]
+}
+
+
+// ==========================================
+// 3. ĐẦU RA CHUNG DÙNG ĐỂ GỬI VỀ LOKI
+// ==========================================
+
+loki.write "day_ve_loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
